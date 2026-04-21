@@ -1,0 +1,22 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// こっから下が追加したところ
+model Todo {
+  id          Int      @id @default(autoincrement()) // 自動で1, 2, 3...と連番になるID
+  title       String   // Todoのタイトル（文字）
+  isCompleted Boolean  @default(false) // 完了したかどうかの判定（最初は「未完了」なので false）
+  createdAt   DateTime @default(now()) // 作成された日時（自動で今の時間が入る）
+}
