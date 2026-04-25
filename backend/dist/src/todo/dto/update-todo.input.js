@@ -10,16 +10,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateTodoInput = void 0;
-const create_todo_input_1 = require("./create-todo.input");
 const graphql_1 = require("@nestjs/graphql");
-let UpdateTodoInput = class UpdateTodoInput extends (0, graphql_1.PartialType)(create_todo_input_1.CreateTodoInput) {
+let UpdateTodoInput = class UpdateTodoInput {
     id;
+    isCompleted;
 };
 exports.UpdateTodoInput = UpdateTodoInput;
 __decorate([
     (0, graphql_1.Field)(() => graphql_1.Int),
     __metadata("design:type", Number)
 ], UpdateTodoInput.prototype, "id", void 0);
+__decorate([
+    (0, graphql_1.Field)(() => Boolean),
+    __metadata("design:type", Boolean)
+], UpdateTodoInput.prototype, "isCompleted", void 0);
 exports.UpdateTodoInput = UpdateTodoInput = __decorate([
     (0, graphql_1.InputType)()
 ], UpdateTodoInput);

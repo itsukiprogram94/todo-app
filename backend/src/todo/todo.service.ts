@@ -21,4 +21,20 @@ export class TodoService {
   findAll() {
     return this.prisma.todo.findMany();
   }
+  // ③ Todoを更新する処理
+  update(id: number, updateTodoInput: UpdateTodoInput) {
+    return this.prisma.todo.update({
+      where: { id: id },
+      data: {
+        isCompleted: updateTodoInput.isCompleted,
+      },
+    });
+  }
+  // ④ Todoを削除する処理
+  remove(id: number) {
+    return this.prisma.todo.delete({
+      where: { id: id },
+    });
+  }
 }
+
