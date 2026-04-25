@@ -27,6 +27,19 @@ let TodoService = class TodoService {
     findAll() {
         return this.prisma.todo.findMany();
     }
+    update(id, updateTodoInput) {
+        return this.prisma.todo.update({
+            where: { id: id },
+            data: {
+                isCompleted: updateTodoInput.isCompleted,
+            },
+        });
+    }
+    remove(id) {
+        return this.prisma.todo.delete({
+            where: { id: id },
+        });
+    }
 };
 exports.TodoService = TodoService;
 exports.TodoService = TodoService = __decorate([
