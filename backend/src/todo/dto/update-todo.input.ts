@@ -7,6 +7,16 @@ export class UpdateTodoInput {
   id: number;
 
   // 更新後のステータス（true か false）
-  @Field(() => Boolean)
-  isCompleted: boolean;
+  @Field(() => Boolean, { nullable: true })
+  isCompleted?: boolean;
+
+  // ★タイトル、詳細、期限日も後から変更できるように追加
+  @Field(() => String, { nullable: true })
+  title?: string;
+
+  @Field(() => String, { nullable: true })
+  description?: string;
+
+  @Field(() => Date, { nullable: true })
+  dueDate?: Date;
 }

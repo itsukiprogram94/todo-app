@@ -1,4 +1,7 @@
 export declare class UpdateTodoInput {
     id: number;
-    isCompleted: boolean;
+    isCompleted?: boolean;
+    title?: string;
+    description?: string;
+    dueDate?: Date;
 }

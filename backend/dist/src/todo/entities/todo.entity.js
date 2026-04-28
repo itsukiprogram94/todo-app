@@ -15,6 +15,8 @@ let Todo = class Todo {
     id;
     title;
     isCompleted;
+    description;
+    dueDate;
 };
 exports.Todo = Todo;
 __decorate([
@@ -29,6 +31,14 @@ __decorate([
     (0, graphql_1.Field)(() => Boolean),
     __metadata("design:type", Boolean)
 ], Todo.prototype, "isCompleted", void 0);
+__decorate([
+    (0, graphql_1.Field)(() => String, { nullable: true }),
+    __metadata("design:type", String)
+], Todo.prototype, "description", void 0);
+__decorate([
+    (0, graphql_1.Field)(() => Date, { nullable: true }),
+    __metadata("design:type", Date)
+], Todo.prototype, "dueDate", void 0);
 exports.Todo = Todo = __decorate([
     (0, graphql_1.ObjectType)()
 ], Todo);

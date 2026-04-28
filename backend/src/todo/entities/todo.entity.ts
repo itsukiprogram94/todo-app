@@ -11,4 +11,10 @@ export class Todo {
 
   @Field(() => Boolean)
   isCompleted: boolean;
+
+  @Field(() => String, {nullable: true })
+  description?: string;
+
+  @Field(() => Date, {nullable: true })
+  dueDate?: Date;
 }
