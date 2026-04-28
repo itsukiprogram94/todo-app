@@ -18,4 +18,7 @@ model Todo {
   title       String   // Todoのタイトル（文字）
   isCompleted Boolean  @default(false) // 完了したかどうかの判定（最初は「未完了」なので false）
   createdAt   DateTime @default(now()) // 作成された日時（自動で今の時間が入る）
+  // 新しく追加する2つの項目
+  description String?    // 詳細説明（? は「空っぽでもOK」という意味です）
+  dueDate     DateTime?  // 期限日（こちらも「設定しなくてもOK」としています）
 }

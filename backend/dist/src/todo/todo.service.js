@@ -21,6 +21,8 @@ let TodoService = class TodoService {
         return this.prisma.todo.create({
             data: {
                 title: createTodoInput.title,
+                description: createTodoInput.description,
+                dueDate: createTodoInput.dueDate,
             },
         });
     }
@@ -32,6 +34,9 @@ let TodoService = class TodoService {
             where: { id: id },
             data: {
                 isCompleted: updateTodoInput.isCompleted,
+                title: updateTodoInput.title,
+                description: updateTodoInput.description,
+                dueDate: updateTodoInput.dueDate,
             },
         });
     }

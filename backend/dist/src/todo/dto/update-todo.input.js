@@ -14,6 +14,9 @@ const graphql_1 = require("@nestjs/graphql");
 let UpdateTodoInput = class UpdateTodoInput {
     id;
     isCompleted;
+    title;
+    description;
+    dueDate;
 };
 exports.UpdateTodoInput = UpdateTodoInput;
 __decorate([
@@ -21,9 +24,21 @@ __decorate([
     __metadata("design:type", Number)
 ], UpdateTodoInput.prototype, "id", void 0);
 __decorate([
-    (0, graphql_1.Field)(() => Boolean),
+    (0, graphql_1.Field)(() => Boolean, { nullable: true }),
     __metadata("design:type", Boolean)
 ], UpdateTodoInput.prototype, "isCompleted", void 0);
+__decorate([
+    (0, graphql_1.Field)(() => String, { nullable: true }),
+    __metadata("design:type", String)
+], UpdateTodoInput.prototype, "title", void 0);
+__decorate([
+    (0, graphql_1.Field)(() => String, { nullable: true }),
+    __metadata("design:type", String)
+], UpdateTodoInput.prototype, "description", void 0);
+__decorate([
+    (0, graphql_1.Field)(() => Date, { nullable: true }),
+    __metadata("design:type", Date)
+], UpdateTodoInput.prototype, "dueDate", void 0);
 exports.UpdateTodoInput = UpdateTodoInput = __decorate([
     (0, graphql_1.InputType)()
 ], UpdateTodoInput);

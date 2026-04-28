@@ -13,12 +13,22 @@ exports.CreateTodoInput = void 0;
 const graphql_1 = require("@nestjs/graphql");
 let CreateTodoInput = class CreateTodoInput {
     title;
+    description;
+    dueDate;
 };
 exports.CreateTodoInput = CreateTodoInput;
 __decorate([
     (0, graphql_1.Field)(() => String),
     __metadata("design:type", String)
 ], CreateTodoInput.prototype, "title", void 0);
+__decorate([
+    (0, graphql_1.Field)(() => String, { nullable: true }),
+    __metadata("design:type", String)
+], CreateTodoInput.prototype, "description", void 0);
+__decorate([
+    (0, graphql_1.Field)(() => Date, { nullable: true }),
+    __metadata("design:type", Date)
+], CreateTodoInput.prototype, "dueDate", void 0);
 exports.CreateTodoInput = CreateTodoInput = __decorate([
     (0, graphql_1.InputType)()
 ], CreateTodoInput);

@@ -13,6 +13,8 @@ export class TodoService {
     return this.prisma.todo.create({
       data: {
         title: createTodoInput.title,
+        description: createTodoInput.description,
+        dueDate: createTodoInput.dueDate,
       },
     });
   }
@@ -27,6 +29,9 @@ export class TodoService {
       where: { id: id },
       data: {
         isCompleted: updateTodoInput.isCompleted,
+        title: updateTodoInput.title,
+        description: updateTodoInput.description,
+        dueDate: updateTodoInput.dueDate,
       },
     });
   }
