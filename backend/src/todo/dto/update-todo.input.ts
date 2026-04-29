@@ -10,7 +10,7 @@ export class UpdateTodoInput {
   @Field(() => Boolean, { nullable: true })
   isCompleted?: boolean;
 
-  // ★タイトル、詳細、期限日も後から変更できるように追加
+  // タイトル、詳細、期限日も後から変更できるように追加
   @Field(() => String, { nullable: true })
   title?: string;
 
@@ -19,4 +19,8 @@ export class UpdateTodoInput {
 
   @Field(() => Date, { nullable: true })
   dueDate?: Date;
+
+  // 更新時にタグを付け替えるためのID配列
+  @Field(() => [Int], { nullable: true })
+  tagIds?: number[];
 }

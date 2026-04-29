@@ -9,43 +9,27 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Todo = void 0;
+exports.Tag = void 0;
 const graphql_1 = require("@nestjs/graphql");
-const tag_entity_1 = require("../../tag/tag.entity");
-let Todo = class Todo {
+let Tag = class Tag {
     id;
-    title;
-    isCompleted;
-    description;
-    dueDate;
-    tags;
+    name;
+    color;
 };
-exports.Todo = Todo;
+exports.Tag = Tag;
 __decorate([
     (0, graphql_1.Field)(() => graphql_1.Int),
     __metadata("design:type", Number)
-], Todo.prototype, "id", void 0);
+], Tag.prototype, "id", void 0);
 __decorate([
     (0, graphql_1.Field)(() => String),
     __metadata("design:type", String)
-], Todo.prototype, "title", void 0);
-__decorate([
-    (0, graphql_1.Field)(() => Boolean),
-    __metadata("design:type", Boolean)
-], Todo.prototype, "isCompleted", void 0);
+], Tag.prototype, "name", void 0);
 __decorate([
     (0, graphql_1.Field)(() => String, { nullable: true }),
     __metadata("design:type", String)
-], Todo.prototype, "description", void 0);
-__decorate([
-    (0, graphql_1.Field)(() => Date, { nullable: true }),
-    __metadata("design:type", Date)
-], Todo.prototype, "dueDate", void 0);
-__decorate([
-    (0, graphql_1.Field)(() => [tag_entity_1.Tag], { nullable: true }),
-    __metadata("design:type", Array)
-], Todo.prototype, "tags", void 0);
-exports.Todo = Todo = __decorate([
+], Tag.prototype, "color", void 0);
+exports.Tag = Tag = __decorate([
     (0, graphql_1.ObjectType)()
-], Todo);
-//# sourceMappingURL=todo.entity.js.map
+], Tag);
+//# sourceMappingURL=tag.entity.js.map

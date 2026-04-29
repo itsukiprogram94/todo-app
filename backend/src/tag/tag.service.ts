@@ -1,0 +1,19 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
+
+@Injectable()
+export class TagService {
+  constructor(private prisma: PrismaService) {}
+
+  // タグをすべて取得する処理
+  findAll() {
+    return this.prisma.tag.findMany();
+  }
+
+  // タグを新しく作る処理
+  create(name: string, color?: string) {
+    return this.prisma.tag.create({
+      data: { name: name, color: color },
+    });
+  }
+}
