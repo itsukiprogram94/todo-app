@@ -5,6 +5,12 @@ export declare class TodoService {
     private prisma;
     constructor(prisma: PrismaService);
     create(createTodoInput: CreateTodoInput): import("@prisma/client").Prisma.Prisma__TodoClient<{
+        tags: {
+            id: number;
+            name: string;
+            color: string | null;
+        }[];
+    } & {
         title: string;
         description: string | null;
         dueDate: Date | null;
@@ -12,15 +18,27 @@ export declare class TodoService {
         isCompleted: boolean;
         createdAt: Date;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
-    findAll(): import("@prisma/client").Prisma.PrismaPromise<{
+    findAll(): import("@prisma/client").Prisma.PrismaPromise<({
+        tags: {
+            id: number;
+            name: string;
+            color: string | null;
+        }[];
+    } & {
         title: string;
         description: string | null;
         dueDate: Date | null;
         id: number;
         isCompleted: boolean;
         createdAt: Date;
-    }[]>;
+    })[]>;
     update(id: number, updateTodoInput: UpdateTodoInput): import("@prisma/client").Prisma.Prisma__TodoClient<{
+        tags: {
+            id: number;
+            name: string;
+            color: string | null;
+        }[];
+    } & {
         title: string;
         description: string | null;
         dueDate: Date | null;

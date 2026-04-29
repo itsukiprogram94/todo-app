@@ -7,6 +7,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { TodoModule } from './todo/todo.module';
+import { TagModule } from './tag/tag.module'; // タグ
 
 
 @Module({
@@ -17,6 +18,7 @@ import { TodoModule } from './todo/todo.module';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     }),
     TodoModule,
+    TagModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -182,3 +182,33 @@
     border-right-color: var(--border);
   }
 }
+/* ★追加：タスクカードのホバーアニメーション */
+.task-card {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white;
+  transition: all 0.2s ease-in-out; /* 0.2秒かけて滑らかに変化させる魔法 */
+}
+
+.task-card:hover {
+  transform: translateY(-2px); /* 少し上にフワッと浮く */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* 影を濃くする */
+  border-color: #aaa;
+}
+
+/* ★追加：アコーディオンの滑らかな開閉（CSS Gridの最新テクニック） */
+.accordion-wrapper {
+  display: grid;
+  grid-template-rows: 0fr; /* 閉じた状態（高さゼロ） */
+  transition: grid-template-rows 0.3s ease-out; /* 0.3秒かけて滑らかに開く魔法 */
+}
+
+.accordion-wrapper.open {
+  grid-template-rows: 1fr; /* 開いた状態（中身の高さに合わせる） */
+}
+
+.accordion-inner {
+  overflow: hidden; /* はみ出た部分を隠す */
+}

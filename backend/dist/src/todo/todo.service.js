@@ -23,11 +23,17 @@ let TodoService = class TodoService {
                 title: createTodoInput.title,
                 description: createTodoInput.description,
                 dueDate: createTodoInput.dueDate,
+                tags: {
+                    connect: createTodoInput.tagIds?.map((tagId) => ({ id: tagId })) || [],
+                },
             },
+            include: { tags: true },
         });
     }
     findAll() {
-        return this.prisma.todo.findMany();
+        return this.prisma.todo.findMany({
+            include: { tags: true },
+        });
     }
     update(id, updateTodoInput) {
         return this.prisma.todo.update({
@@ -37,7 +43,13 @@ let TodoService = class TodoService {
                 title: updateTodoInput.title,
                 description: updateTodoInput.description,
                 dueDate: updateTodoInput.dueDate,
+                tags: updateTodoInput.tagIds
+                    ? {
+                        set: updateTodoInput.tagIds.map((tagId) => ({ id: tagId })),
+                    }
+                    : undefined,
             },
+            include: { tags: true },
         });
     }
     remove(id) {

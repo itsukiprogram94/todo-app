@@ -12,7 +12,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// こっから下が追加したところ
+// こっから下がTodoの要件
 model Todo {
   id          Int      @id @default(autoincrement()) // 自動で1, 2, 3...と連番になるID
   title       String   // Todoのタイトル（文字）
@@ -21,4 +21,13 @@ model Todo {
   // 新しく追加する2つの項目
   description String?    // 詳細説明（? は「空っぽでもOK」という意味です）
   dueDate     DateTime?  // 期限日（こちらも「設定しなくてもOK」としています）
+  tags         Tag[]
+}
+
+// タグのモデル（箱）を新設
+model Tag {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique  // @unique: 同じ名前のタグは作れないようにする設定
+  color String?          // タグの色（"#FF0000" のようなカラーコードを入れる想定）
+  todos Todo[]
 }

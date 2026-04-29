@@ -1,5 +1,5 @@
 // backend/src/todo/dto/create-todo.input.ts
-import { InputType, Field } from '@nestjs/graphql';
+import { InputType, Field, Int } from '@nestjs/graphql';
 
 @InputType()
 export class CreateTodoInput {
@@ -11,6 +11,10 @@ export class CreateTodoInput {
 
   @Field(() => Date, { nullable: true })
   dueDate?: Date;
+
+  // 紐づけたいタグのIDの配列（空っぽでもOK）
+  @Field(() => [Int], { nullable: true })
+  tagIds?: number[];
 
 
 }

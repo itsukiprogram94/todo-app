@@ -14,6 +14,7 @@ const graphql_1 = require("@nestjs/graphql");
 const apollo_1 = require("@nestjs/apollo");
 const path_1 = require("path");
 const todo_module_1 = require("./todo/todo.module");
+const tag_module_1 = require("./tag/tag.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -25,6 +26,7 @@ exports.AppModule = AppModule = __decorate([
                 autoSchemaFile: (0, path_1.join)(process.cwd(), 'src/schema.gql'),
             }),
             todo_module_1.TodoModule,
+            tag_module_1.TagModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

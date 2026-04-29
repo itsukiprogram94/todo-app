@@ -15,6 +15,7 @@ let CreateTodoInput = class CreateTodoInput {
     title;
     description;
     dueDate;
+    tagIds;
 };
 exports.CreateTodoInput = CreateTodoInput;
 __decorate([
@@ -29,6 +30,10 @@ __decorate([
     (0, graphql_1.Field)(() => Date, { nullable: true }),
     __metadata("design:type", Date)
 ], CreateTodoInput.prototype, "dueDate", void 0);
+__decorate([
+    (0, graphql_1.Field)(() => [graphql_1.Int], { nullable: true }),
+    __metadata("design:type", Array)
+], CreateTodoInput.prototype, "tagIds", void 0);
 exports.CreateTodoInput = CreateTodoInput = __decorate([
     (0, graphql_1.InputType)()
 ], CreateTodoInput);

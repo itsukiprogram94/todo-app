@@ -4,4 +4,5 @@ export declare class UpdateTodoInput {
     title?: string;
     description?: string;
     dueDate?: Date;
+    tagIds?: number[];
 }
