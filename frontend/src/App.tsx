@@ -1,9 +1,8 @@
 // frontend/src/App.tsx
 
 import React, { useState } from 'react';//画面上データを一時的に記憶するためのStateを使う
-import { useQuery, useMutation } from '@apollo/client/react';//sueQuery: データの取得、useMutation: 追加更新削除のための関数
-import {gql} from '@apollo/client/core';//文字列として書かれたGraphQLの構文を、Apollo Clientが解析できるASTというデータ形式に変換するため
-
+import { useQuery, useMutation, gql } from '@apollo/client';//sueQuery: データの取得、useMutation: 追加更新削除のための関数
+import './App.css';
 // フロントエンドから送る命令
 //①データベースからTodo一覧を取得する」ためのGraphQLクエリの定義
 const GET_TODOS = gql`
@@ -330,48 +329,34 @@ function App() {
       
       <ul style={{ listStyleType: 'none', padding: 0 }}>
         {filteredTodos.map((todo: any) => (
-          <li key={todo.id} style={{ marginBottom: '15px', padding: '10px', border: '1px solid #ccc', borderRadius: '8px' }}>
+          <li key={todo.id} className="task-card">
             
             {editingId === todo.id ? (
+              // --- 編集モード ---
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} style={{ padding: '4px', fontSize: '1rem' }} />
                 <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} style={{ padding: '4px', minHeight: '60px' }} />
-                
-                {/* ★新機能：タグ選択エリア（編集用） */}
-                {tagData && tagData.tags.length > 0 && (
+                {tagData?.tags && tagData.tags.length > 0 && (
                   <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '5px' }}>
                     {tagData.tags.map((tag: any) => (
                       <label key={tag.id} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={editSelectedTagIds.includes(tag.id)} 
-                          onChange={() => toggleTagSelection(tag.id, true)} 
-                        />
-                        <span style={{ backgroundColor: tag.color || '#eee', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>
-                          {tag.name}
-                        </span>
+                        <input type="checkbox" checked={editSelectedTagIds.includes(tag.id)} onChange={() => toggleTagSelection(tag.id, true)} />
+                        <span style={{ backgroundColor: tag.color || '#eee', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>{tag.name}</span>
                       </label>
                     ))}
                   </div>
                 )}
-
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <input type="date" value={editDueDate} onChange={(e) => setEditDueDate(e.target.value)} style={{ padding: '4px' }} />
                   <button onClick={() => handleEditSave(todo.id)} style={{ padding: '4px 12px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>保存</button>
-                  <button onClick={() => setEditingId(null)} style={{ padding: '4px 12px', cursor: 'pointer' }}>キャンセル</button>
+                  <button onClick={handleEditCancel} style={{ padding: '4px 12px', cursor: 'pointer' }}>キャンセル</button>
                 </div>
               </div>
             ) : (
-              <div
-                onClick={() => toggleExpand(todo.id)} 
-                style={{ cursor: 'pointer', padding: '8px', borderRadius: '4px', backgroundColor: expandedTodoId === todo.id ? '#f0f0f0' : 'transparent' }}
-              >
+              // --- 表示モード ---
+              <div onClick={() => toggleExpand(todo.id)} style={{ cursor: 'pointer' }}>
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  {/* チェックボックス：親へのクリックイベント伝播を防ぐために e.stopPropagation() を追加 */}
-                  <span 
-                    onClick={(e) => { e.stopPropagation(); handleToggle(todo.id, todo.isCompleted); }} 
-                    style={{ cursor: 'pointer', fontSize: '1.2rem', userSelect: 'none' }}
-                  >
+                  <span onClick={(e) => { e.stopPropagation(); handleToggle(todo.id, todo.isCompleted); }} style={{ cursor: 'pointer', fontSize: '1.2rem', userSelect: 'none' }}>
                     {todo.isCompleted ? '✅' : '⬜️'}
                   </span>
                   
@@ -382,25 +367,32 @@ function App() {
                   {todo.tags?.map((tag: any) => (
                     <span key={tag.id} style={{ backgroundColor: tag.color || '#eee', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>{tag.name}</span>
                   ))}
+
+                  {/* ★変更点②：期限を詳細の中ではなく、タイトルやタグの横に常時表示させる */}
+                  {todo.dueDate && (
+                    <span style={{ fontSize: '0.8rem', color: '#d9534f', marginLeft: '4px', fontWeight: 'bold' }}>
+                      🗓 {new Date(todo.dueDate).toLocaleDateString('ja-JP')}
+                    </span>
+                  )}
                   
                   <div style={{ flexGrow: 1 }} />
-                  
-                  {/* 編集・削除ボタン：こちらも e.stopPropagation() を追加 */}
                   <button onClick={(e) => { e.stopPropagation(); handleEditStart(todo); }} style={{ padding: '4px 8px', cursor: 'pointer' }}>編集</button>
                   <button onClick={(e) => { e.stopPropagation(); handleDelete(todo.id); }} style={{ padding: '4px 8px', cursor: 'pointer', color: 'red' }}>削除</button>
                 </div>
                 
-                {/* ★新機能：開いている時（expandedTodoId === todo.id）だけ詳細を表示する */}
-                {expandedTodoId === todo.id && (
-                  <div style={{ marginLeft: '32px', marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #ccc', fontSize: '0.9rem', color: '#555' }}>
-                    {todo.dueDate && <div style={{ color: '#d9534f', marginBottom: '4px' }}>🗓 期限: {new Date(todo.dueDate).toLocaleDateString('ja-JP')}</div>}
-                    {todo.description ? (
-                      <div style={{ whiteSpace: 'pre-wrap' }}>{todo.description}</div>
-                    ) : (
-                      <div style={{ color: '#aaa', fontStyle: 'italic' }}>詳細はありません</div>
-                    )}
+                {/* ★変更点③：CSS Gridの魔法を使って、中身の高さに合わせて滑らかに開かせる */}
+                <div className={`accordion-wrapper ${expandedTodoId === todo.id ? 'open' : ''}`}>
+                  <div className="accordion-inner">
+                    <div style={{ marginLeft: '32px', marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #ccc', fontSize: '0.9rem', color: '#555' }}>
+                      {todo.description ? (
+                        <div style={{ whiteSpace: 'pre-wrap' }}>{todo.description}</div>
+                      ) : (
+                        <div style={{ color: '#aaa', fontStyle: 'italic' }}>詳細はありません</div>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
+
               </div>
             )}
           </li>
