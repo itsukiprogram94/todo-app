@@ -192,6 +192,7 @@
   transition: all 0.2s ease-in-out; /* 0.2秒かけて滑らかに変化させる魔法 */
 }
 
+/* マウスが乗った時（hover）の動き */
 .task-card:hover {
   transform: translateY(-2px); /* 少し上にフワッと浮く */
   box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* 影を濃くする */
@@ -206,7 +207,7 @@
 }
 
 .accordion-wrapper.open {
-  grid-template-rows: 1fr; /* 開いた状態（中身の高さに合わせる） */
+  grid-template-rows: 1fr; /* 開いた状態（中身の高さに合わせて広がる） */
 }
 
 .accordion-inner {
