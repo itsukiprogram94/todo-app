@@ -1,8 +1,10 @@
 // frontend/src/App.tsx
-
-import React, { useState } from 'react';//画面上データを一時的に記憶するためのStateを使う
+import React, { useState } from 'react';//画面上データを一時的に記憶するためのState
 import { useQuery, useMutation, gql } from '@apollo/client';//sueQuery: データの取得、useMutation: 追加更新削除のための関数
 import './App.css';
+import { FilterPanel } from './components/FilterPanel'; // フィルターのコンポーネント読み込み
+import { TodoItem } from './components/TodoItem'; // Todoカードのコンポーネント読み込み
+
 // フロントエンドから送る命令
 //①データベースからTodo一覧を取得する」ためのGraphQLクエリの定義
 const GET_TODOS = gql`
@@ -65,6 +67,7 @@ const CREATE_TAG = gql`
   }
 `;
 
+//Appコンポーネントの定義
 function App() {
   //入力欄の記憶するためのState、初期値なので空欄
   const [InputValue, setInputValue] = useState('');
@@ -86,6 +89,9 @@ function App() {
 
   // フィルター：現在フィルターで選択されているタグのID（null なら「すべて表示」）
   const [activeFilterTagId, setActiveFilterTagId] = useState<number | null>(null);
+
+  // ステータスフィルター用のステート（'ALL'=すべて, 'ACTIVE'=未完了, 'COMPLETED'=完了）
+  const [filterStatus, setFilterStatus] = useState<string>('ALL');
   //どの詳細を開いているかを記憶するStateも定義（初期値はnullで、どれも開いていない状態）
   const [expandedTodoId, setExpandedTodoId] = useState<number | null>(null);
   //カードクリック時に開閉の切り替え関数
@@ -98,9 +104,6 @@ function App() {
 
 
   // 注文書をバックエンドに送信するためのフックを呼び出す
-  // loading: 読み込み中かどうか
-  // error: エラーが起きたか
-  // data: 届いたTodoデータ
   const { loading, error, data } = useQuery(GET_TODOS); 
 
   // ★新機能：タグ用の通信フックを追加
@@ -238,11 +241,20 @@ function App() {
   };
 
   // ★新機能：画面に表示するTodoを、選択されたタグで絞り込む
-  const filteredTodos = data?.todos.filter((todo: any) => {
-    if (activeFilterTagId === null) return true; // 「すべて」が選ばれている時は全部表示
-    // Todoが持っているタグの中に、フィルターで選ばれたタグIDが含まれているかチェック
-    return todo.tags.some((tag: any) => tag.id === activeFilterTagId);
+  // ★ここから入れ替え：タグとステータスの「掛け合わせ（AND）絞り込み」
+  const filteredTodos = (data?.todos || []).filter((todo: any) => {
+    // 1. タグの条件をチェック（nullなら全員通過、IDがあれば一致するタスクだけ通過）
+    const matchTag = activeFilterTagId === null || todo.tags?.some((tag: any) => tag.id === activeFilterTagId);
+    
+    // 2. ステータスの条件をチェック
+    let matchStatus = true;
+    if (filterStatus === 'ACTIVE') matchStatus = !todo.isCompleted;   // 未完了のみ通過
+    if (filterStatus === 'COMPLETED') matchStatus = todo.isCompleted; // 完了のみ通過
+
+    // 3. 両方の条件をクリア（同時押し）したタスクだけを画面に返す
+    return matchTag && matchStatus;
   });
+  // ★ここまで入れ替え
 
   // 読み込み中とエラー時の画面も作っておく
   if (loading) return <p>読み込み中...</p>;
@@ -253,7 +265,7 @@ function App() {
   //ここからUIの部分
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h1>フルスタックTodoアプリ</h1>
+      <h1>個人用汎用型Todoアプリ</h1>
       <form onSubmit={handleSubmit} style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <input type="text" value={InputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="タスクのタイトル (必須)" style={{ padding: '8px', fontSize: '1rem' }} required />
         <textarea value={descriptionValue} onChange={(e) => setDescriptionValue(e.target.value)} placeholder="詳細な説明 (任意)" style={{ padding: '8px', fontSize: '1rem', minHeight: '60px' }} />
@@ -283,119 +295,41 @@ function App() {
         </div>
       </form>
       {/* ... (タスク追加フォーム </form> のすぐ下に追加します) ... */}
+      {/* ★自作したコンポーネントを呼び出し、Props（荷物）を渡す */}
+      <FilterPanel 
+        tagData={tagData}
+        activeFilterTagId={activeFilterTagId}
+        setActiveFilterTagId={setActiveFilterTagId}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+      />
 
-      {/* ★新機能：フィルター切り替えタブ */}
-      {tagData && tagData.tags.length > 0 && (
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '10px' }}>
-          {/* 「すべて」ボタン */}
-          <button 
-            onClick={() => setActiveFilterTagId(null)}
-            style={{ 
-              padding: '6px 16px', 
-              borderRadius: '20px', 
-              border: 'none', 
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              backgroundColor: activeFilterTagId === null ? '#333' : '#eee',
-              color: activeFilterTagId === null ? '#fff' : '#333',
-            }}
-          >
-            すべて
-          </button>
-          
-          {/* 各タグのボタン */}
-          {tagData.tags.map((tag: any) => (
-            <button 
-              key={tag.id}
-              onClick={() => setActiveFilterTagId(tag.id)}
-              style={{ 
-                padding: '6px 16px', 
-                borderRadius: '20px', 
-                border: 'none', 
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                // 選ばれている時はタグの色、選ばれていない時は薄いグレー
-                backgroundColor: activeFilterTagId === tag.id ? (tag.color || '#4CAF50') : '#eee',
-                color: activeFilterTagId === tag.id ? '#fff' : '#333',
-                opacity: activeFilterTagId === tag.id ? 1 : 0.7,
-              }}
-            >
-              {tag.name}
-            </button>
-          ))}
-        </div>
-      )}
-
+      {/* Todoリスト */}
       
+      {/* Todoリスト */}
       <ul style={{ listStyleType: 'none', padding: 0 }}>
         {filteredTodos.map((todo: any) => (
-          <li key={todo.id} className="task-card">
-            
-            {editingId === todo.id ? (
-              // --- 編集モード ---
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} style={{ padding: '4px', fontSize: '1rem' }} />
-                <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} style={{ padding: '4px', minHeight: '60px' }} />
-                {tagData?.tags && tagData.tags.length > 0 && (
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '5px' }}>
-                    {tagData.tags.map((tag: any) => (
-                      <label key={tag.id} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <input type="checkbox" checked={editSelectedTagIds.includes(tag.id)} onChange={() => toggleTagSelection(tag.id, true)} />
-                        <span style={{ backgroundColor: tag.color || '#eee', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>{tag.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <input type="date" value={editDueDate} onChange={(e) => setEditDueDate(e.target.value)} style={{ padding: '4px' }} />
-                  <button onClick={() => handleEditSave(todo.id)} style={{ padding: '4px 12px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>保存</button>
-                  <button onClick={handleEditCancel} style={{ padding: '4px 12px', cursor: 'pointer' }}>キャンセル</button>
-                </div>
-              </div>
-            ) : (
-              // --- 表示モード ---
-              <div onClick={() => toggleExpand(todo.id)} style={{ cursor: 'pointer' }}>
-                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  <span onClick={(e) => { e.stopPropagation(); handleToggle(todo.id, todo.isCompleted); }} style={{ cursor: 'pointer', fontSize: '1.2rem', userSelect: 'none' }}>
-                    {todo.isCompleted ? '✅' : '⬜️'}
-                  </span>
-                  
-                  <span style={{ textDecoration: todo.isCompleted ? 'line-through' : 'none', color: todo.isCompleted ? 'gray' : 'black', fontWeight: 'bold' }}>
-                    {todo.title}
-                  </span>
-                  
-                  {todo.tags?.map((tag: any) => (
-                    <span key={tag.id} style={{ backgroundColor: tag.color || '#eee', color: '#fff', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', textShadow: '0px 0px 2px rgba(0,0,0,0.5)' }}>{tag.name}</span>
-                  ))}
-
-                  {/* ★変更点②：期限を詳細の中ではなく、タイトルやタグの横に常時表示させる */}
-                  {todo.dueDate && (
-                    <span style={{ fontSize: '0.8rem', color: '#d9534f', marginLeft: '4px', fontWeight: 'bold' }}>
-                      🗓 {new Date(todo.dueDate).toLocaleDateString('ja-JP')}
-                    </span>
-                  )}
-                  
-                  <div style={{ flexGrow: 1 }} />
-                  <button onClick={(e) => { e.stopPropagation(); handleEditStart(todo); }} style={{ padding: '4px 8px', cursor: 'pointer' }}>編集</button>
-                  <button onClick={(e) => { e.stopPropagation(); handleDelete(todo.id); }} style={{ padding: '4px 8px', cursor: 'pointer', color: 'red' }}>削除</button>
-                </div>
-                
-                {/* ★変更点③：CSS Gridの魔法を使って、中身の高さに合わせて滑らかに開かせる */}
-                <div className={`accordion-wrapper ${expandedTodoId === todo.id ? 'open' : ''}`}>
-                  <div className="accordion-inner">
-                    <div style={{ marginLeft: '32px', marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #ccc', fontSize: '0.9rem', color: '#555' }}>
-                      {todo.description ? (
-                        <div style={{ whiteSpace: 'pre-wrap' }}>{todo.description}</div>
-                      ) : (
-                        <div style={{ color: '#aaa', fontStyle: 'italic' }}>詳細はありません</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            )}
-          </li>
+          <TodoItem 
+            key={todo.id}
+            todo={todo}
+            editingId={editingId}
+            editTitle={editTitle}
+            setEditTitle={setEditTitle}
+            editDescription={editDescription}
+            setEditDescription={setEditDescription}
+            editDueDate={editDueDate}
+            setEditDueDate={setEditDueDate}
+            editSelectedTagIds={editSelectedTagIds}
+            toggleTagSelection={toggleTagSelection}
+            tagData={tagData}
+            handleEditSave={handleEditSave}
+            handleEditCancel={handleEditCancel}
+            expandedTodoId={expandedTodoId}
+            toggleExpand={toggleExpand}
+            handleToggle={handleToggle}
+            handleDelete={handleDelete}
+            handleEditStart={handleEditStart}
+          />
         ))}
       </ul>
 
