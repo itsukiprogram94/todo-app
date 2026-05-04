@@ -27,6 +27,12 @@ let TagResolver = class TagResolver {
     createTag(name, color) {
         return this.tagService.create(name, color);
     }
+    updateTag(id, name, color) {
+        return this.tagService.updateTag(id, name, color);
+    }
+    deleteTag(id) {
+        return this.tagService.deleteTag(id);
+    }
 };
 exports.TagResolver = TagResolver;
 __decorate([
@@ -43,6 +49,22 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], TagResolver.prototype, "createTag", null);
+__decorate([
+    (0, graphql_1.Mutation)(() => tag_entity_1.Tag),
+    __param(0, (0, graphql_1.Args)('id', { type: () => graphql_1.Int })),
+    __param(1, (0, graphql_1.Args)('name')),
+    __param(2, (0, graphql_1.Args)('color', { nullable: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, String, String]),
+    __metadata("design:returntype", void 0)
+], TagResolver.prototype, "updateTag", null);
+__decorate([
+    (0, graphql_1.Mutation)(() => tag_entity_1.Tag),
+    __param(0, (0, graphql_1.Args)('id', { type: () => graphql_1.Int })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], TagResolver.prototype, "deleteTag", null);
 exports.TagResolver = TagResolver = __decorate([
     (0, graphql_1.Resolver)(() => tag_entity_1.Tag),
     __metadata("design:paramtypes", [tag_service_1.TagService])

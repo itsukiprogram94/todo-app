@@ -189,21 +189,21 @@
   border: 1px solid #ccc;
   border-radius: 8px;
   background-color: white;
-  transition: all 0.2s ease-in-out; /* 0.2秒かけて滑らかに変化させる魔法 */
+  transition: all 0.2s ease-in-out; /* 0.2秒かけて滑らかに変化させる */
 }
 
-/* マウスが乗った時（hover）の動き */
+/* マウスが乗った時のhoverの動き */
 .task-card:hover {
   transform: translateY(-2px); /* 少し上にフワッと浮く */
   box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* 影を濃くする */
   border-color: #aaa;
 }
 
-/* ★追加：アコーディオンの滑らかな開閉（CSS Gridの最新テクニック） */
+/* ★追加：アコーディオンの滑らかな開閉 */
 .accordion-wrapper {
   display: grid;
   grid-template-rows: 0fr; /* 閉じた状態（高さゼロ） */
-  transition: grid-template-rows 0.3s ease-out; /* 0.3秒かけて滑らかに開く魔法 */
+  transition: grid-template-rows 0.3s ease-out; /* 0.3秒かけて滑らかに開く */
 }
 
 .accordion-wrapper.open {

@@ -6,7 +6,7 @@ import { FilterPanel } from './components/FilterPanel'; // フィルターのコ
 import { TodoItem } from './components/TodoItem'; // Todoカードのコンポーネント読み込み
 
 // フロントエンドから送る命令
-//①データベースからTodo一覧を取得する」ためのGraphQLクエリの定義
+//①データベースからTodo一覧を取得するためのGraphQLクエリの定義
 const GET_TODOS = gql`
   query GetTodos {
     todos {
@@ -21,7 +21,6 @@ const GET_TODOS = gql`
 `;
 
 //②データの追加(Mutation)の注文書を定義
-//$title は引数（変数）で、String! は「文字列型であり、Null不可」であることを示す。
 ////createTodo という名前のリゾルバ（処理関数）を呼び出します。
 const CREATE_TODO = gql`
   mutation CREATE_TODO($title: String!, $description: String, $dueDate: DateTime, $tagIds: [Int!]!) {
@@ -63,6 +62,26 @@ const CREATE_TAG = gql`
       id
       name
       color
+    }
+  }
+`;
+
+// ⑦タグを更新する注文書
+const UPDATE_TAG = gql`
+  mutation UpdateTag($id: Int!, $name: String!, $color: String) {
+    updateTag(id: $id, name: $name, color: $color) {
+      id
+      name
+      color
+    }
+  }
+`;
+
+// ⑧タグを削除する注文書
+const DELETE_TAG = gql`
+  mutation DeleteTag($id: Int!) {
+    deleteTag(id: $id) {
+      id
     }
   }
 `;
@@ -146,11 +165,10 @@ function App() {
     }
   };
 
-  // 「追加ボタン」が押された時の関数
+  // 「追加ボタン」が押された時の関数をqueryから呼び出せるように定義する
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!InputValue.trim()) return;
-
     try {
       // カレンダーの日付(YYYY-MM-DD)を、バックエンドが読める国際標準規格(ISO文字列)に変換
       const formattedDate = dueDateValue ? new Date(dueDateValue).toISOString() : null;
@@ -172,7 +190,7 @@ function App() {
       console.error("追加エラー:", err);
     }
   };
-  // ★修正ポイント②：カタマリ（updateTodoInput）の中にデータを入れて送るように変更
+  // カタマリ（updateTodoInput）の中にデータを入れて送るように変更
   const handleToggle = async (id: number, currentStatus: boolean) => {
     try {
       await updateTodo({ 
@@ -184,7 +202,7 @@ function App() {
       console.error("更新エラー:", err);
     }
   };
-  // ★新機能：削除ボタンがクリックされた時の処理
+  // 削除ボタンがクリックされた時の処理
   const handleDelete = async (id: number) => {
     // 誤操作を防ぐために、ブラウザ標準の確認ダイアログを出す
     const isConfirmed = window.confirm("本当にこのTodoを削除しますか？");
@@ -196,7 +214,7 @@ function App() {
       console.error("削除エラー:", err);
     }
   };
-  // ★新機能：編集ボタンを押した時の処理（編集モードに入る）
+  // 編集ボタンを押した時の処理（編集モードに入る）
   const handleEditStart = (todo: any) => {
     setEditingId(todo.id);
     setEditTitle(todo.title);
@@ -206,7 +224,7 @@ function App() {
     setEditSelectedTagIds(todo.tags.map((tag: any) => tag.id) || []); // タグのIDだけ抜き取ってセット
   };
 
-  // ★新機能：編集の「保存」を押した時の処理
+  // 編集の「保存」を押した時の処理
   const handleEditSave = async (id: number) => {
     if (!editTitle.trim()) return;
     try {
@@ -235,13 +253,13 @@ function App() {
       setSelectedTagIds(prev => prev.includes(tagId) ? prev.filter(id => id !== tagId) : [...prev, tagId]);
     }
   };
-  // ★新機能：編集の「キャンセル」を押した時の処理
+  // 編集の「キャンセル」を押した時の処理
   const handleEditCancel = () => {
     setEditingId(null); // 編集モードを終了するだけ
   };
 
-  // ★新機能：画面に表示するTodoを、選択されたタグで絞り込む
-  // ★ここから入れ替え：タグとステータスの「掛け合わせ（AND）絞り込み」
+  // 画面に表示するTodoを、選択されたタグで絞り込む
+  // タグとステータスの「掛け合わせ（AND）絞り込み」
   const filteredTodos = (data?.todos || []).filter((todo: any) => {
     // 1. タグの条件をチェック（nullなら全員通過、IDがあれば一致するタスクだけ通過）
     const matchTag = activeFilterTagId === null || todo.tags?.some((tag: any) => tag.id === activeFilterTagId);
@@ -254,9 +272,56 @@ function App() {
     // 3. 両方の条件をクリア（同時押し）したタスクだけを画面に返す
     return matchTag && matchStatus;
   });
-  // ★ここまで入れ替え
+  // ★追加：現在編集中のタグIDを記憶するState（nullなら「新規作成モード」）
+  const [editingTagId, setEditingTagId] = useState<number | null>(null);
 
-  // 読み込み中とエラー時の画面も作っておく
+  // ★追加：更新と削除のMutationを準備
+  const [updateTag] = useMutation(UPDATE_TAG, {
+    refetchQueries: [{ query: GET_TAGS }, { query: GET_TODOS }],
+  });
+  const [deleteTag] = useMutation(DELETE_TAG, {
+    refetchQueries: [{ query: GET_TAGS }, { query: GET_TODOS }],
+  });
+
+  // ★修正：タグがクリックされた時に、フォームを「編集モード」にする関数
+  const handleTagClick = (tag: any) => {
+    setEditingTagId(tag.id);
+    setTagName(tag.name);                // ← newTagName から tagName に修正
+    setTagColor(tag.color || '#eeeeee'); // ← newTagColor から tagColor に修正
+  };
+
+  // ★修正：編集モードをキャンセルして「新規作成モード」に戻す関数
+  const resetTagForm = () => {
+    setEditingTagId(null);
+    setTagName('');           // ← 修正
+    setTagColor('#eeeeee');   // ← 修正
+  };
+
+  // ★修正：タグ更新の実行
+  const handleUpdateTag = async () => {
+    if (!tagName.trim() || !editingTagId) return; // ← 修正
+    try {
+      await updateTag({ variables: { id: editingTagId, name: tagName, color: tagColor } }); // ← 修正
+      resetTagForm(); 
+    } catch (error) {
+      console.error("タグの更新に失敗しました", error);
+    }
+  };
+
+  // ★追加：タグ削除の実行
+  const handleDeleteTag = async () => {
+    if (!editingTagId) return;
+    if (!window.confirm("本当にこのタグを削除しますか？紐づいているタスクからも解除されます。")) return;
+    
+    try {
+      await deleteTag({ variables: { id: editingTagId } });
+      resetTagForm();
+    } catch (error) {
+      console.error("タグの削除に失敗しました", error);
+    }
+  };
+
+  // 読み込み中とエラー時の画面表示
   if (loading) return <p>読み込み中...</p>;
   if (error) return <p>エラーが発生しました: {error.message}</p>;
 
@@ -270,7 +335,7 @@ function App() {
         <input type="text" value={InputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="タスクのタイトル (必須)" style={{ padding: '8px', fontSize: '1rem' }} required />
         <textarea value={descriptionValue} onChange={(e) => setDescriptionValue(e.target.value)} placeholder="詳細な説明 (任意)" style={{ padding: '8px', fontSize: '1rem', minHeight: '60px' }} />
         
-        {/* ★新機能：タグ選択エリア（新規追加用） */}
+        {/* タグ選択エリア（新規追加用） */}
         {tagData && tagData.tags.length > 0 && (
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
             <span style={{ fontSize: '0.9rem', color: '#555' }}>タグを選択:</span>
@@ -294,8 +359,7 @@ function App() {
           <button type="submit" style={{ padding: '8px 16px', flexGrow: 1, cursor: 'pointer' }}>タスクを追加</button>
         </div>
       </form>
-      {/* ... (タスク追加フォーム </form> のすぐ下に追加します) ... */}
-      {/* ★自作したコンポーネントを呼び出し、Props（荷物）を渡す */}
+      {/* 自作したコンポーネントを呼び出し、Propsを渡す */}
       <FilterPanel 
         tagData={tagData}
         activeFilterTagId={activeFilterTagId}
@@ -304,8 +368,6 @@ function App() {
         setFilterStatus={setFilterStatus}
       />
 
-      {/* Todoリスト */}
-      
       {/* Todoリスト */}
       <ul style={{ listStyleType: 'none', padding: 0 }}>
         {filteredTodos.map((todo: any) => (
@@ -333,50 +395,61 @@ function App() {
         ))}
       </ul>
 
+      {/* タグ管理エリア */}
+      <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#e9ecef', borderRadius: '8px' }}>
+        <h3 style={{ marginTop: 0, fontSize: '1.1rem' }}>🏷 タグ管理</h3>
+        
+        {/* タグ一覧（クリックで編集モードへ） */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+          {tagData?.tags?.map((tag: any) => (
+            <span 
+              key={tag.id} 
+              onClick={() => handleTagClick(tag)}
+              style={{ 
+                backgroundColor: tag.color || '#ccc', 
+                color: '#fff', 
+                padding: '4px 10px', 
+                borderRadius: '16px', 
+                fontSize: '0.85rem', 
+                fontWeight: 'bold',
+                cursor: 'pointer', // ★クリックできることを伝える
+                border: editingTagId === tag.id ? '2px solid #000' : 'none', // ★編集中は枠線をつける
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
 
-      {/* ★新機能：タグ管理コーナー */}
-      <hr style={{ margin: '40px 0', border: 'none', borderTop: '2px dashed #ccc' }} />
-      
-      <h2>🏷 タグ管理</h2>
-      
-      {/* タグ追加フォーム */}
-      <form onSubmit={handleTagSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <input 
-          type="text" 
-          value={tagName} 
-          onChange={(e) => setTagName(e.target.value)} 
-          placeholder="新しいタグ名" 
-          style={{ padding: '8px', fontSize: '1rem', flexGrow: 1 }}
-          required
-        />
-        {/* カラーピッカー（色選択）の入力欄 */}
-        <input 
-          type="color" 
-          value={tagColor} 
-          onChange={(e) => setTagColor(e.target.value)} 
-          style={{ padding: '0', width: '40px', height: '40px', cursor: 'pointer', border: 'none' }}
-        />
-        <button type="submit" style={{ padding: '8px 16px', cursor: 'pointer' }}>タグを作成</button>
-      </form>
-
-      {/* タグ一覧表示 */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-        {tagData && tagData.tags.map((tag: any) => (
-          <span 
-            key={tag.id} 
-            style={{ 
-              backgroundColor: tag.color || '#eee', 
-              color: '#fff', 
-              padding: '6px 12px', 
-              borderRadius: '20px', // 角丸にしてバッジっぽくする
-              fontSize: '0.9rem',
-              fontWeight: 'bold',
-              textShadow: '0px 0px 2px rgba(0,0,0,0.5)' // 文字が見えやすいように影をつける
-            }}
-          >
-            {tag.name}
-          </span>
-        ))}
+        {/* フォーム部分（作成モードと編集モードで動的に切り替わる） */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <input 
+            type="text" 
+            value={tagName} // ← 修正
+            onChange={(e) => setTagName(e.target.value)} // ← 修正
+            placeholder={editingTagId ? "タグ名を編集..." : "新しいタグ名..."} 
+            style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }} 
+          />
+          <input 
+            type="color" 
+            value={tagColor} // ← 修正
+            onChange={(e) => setTagColor(e.target.value)} // ← 修正
+            style={{ padding: '0', cursor: 'pointer', border: 'none', background: 'none' }} 
+          />
+          
+          {editingTagId ? (
+            // --- 編集モードのボタン ---
+            <>
+              <button onClick={handleUpdateTag} style={{ padding: '6px 12px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>更新</button>
+              <button onClick={handleDeleteTag} style={{ padding: '6px 12px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>削除</button>
+              <button onClick={resetTagForm} style={{ padding: '6px 12px', backgroundColor: '#9e9e9e', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>キャンセル</button>
+            </>
+          ) : (
+            // --- 新規作成モードのボタン ---
+            <button onClick={handleTagSubmit} style={{ padding: '6px 12px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>追加</button>
+          )}
+        </div>
       </div>
 
     </div>

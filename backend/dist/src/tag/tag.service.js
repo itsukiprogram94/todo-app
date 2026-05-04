@@ -25,6 +25,17 @@ let TagService = class TagService {
             data: { name: name, color: color },
         });
     }
+    updateTag(id, name, color) {
+        return this.prisma.tag.update({
+            where: { id: id },
+            data: { name: name, color: color },
+        });
+    }
+    deleteTag(id) {
+        return this.prisma.tag.delete({
+            where: { id: id },
+        });
+    }
 };
 exports.TagService = TagService;
 exports.TagService = TagService = __decorate([
