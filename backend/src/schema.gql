@@ -32,6 +32,8 @@ type Mutation {
   updateTodo(updateTodoInput: UpdateTodoInput!): Todo!
   removeTodo(id: Int!): Todo!
   createTag(name: String!, color: String): Tag!
+  updateTag(id: Int!, name: String!, color: String): Tag!
+  deleteTag(id: Int!): Tag!
 }
 
 input CreateTodoInput {
