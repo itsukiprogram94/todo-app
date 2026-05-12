@@ -28,7 +28,11 @@ React (フロントエンド) と NestJS + GraphQL (バックエンド)、Prisma
   - 「ステータス（完了/未完了）」と「タグ」の掛け合わせによるタスクの絞り込み表示。
 
 ## 動作確認動画 (CRUD操作)
-*(※ここに、タスクとタグの追加・編集・削除・絞り込みなど一連のCRUD操作を録画した動画をドラッグ＆ドロップで貼り付けてください)*
+
+
+https://github.com/user-attachments/assets/67edfc44-f5cb-4415-900b-e1cb70267d4d
+
+
 
 ## 技術スタック
 - **Frontend**: React, TypeScript, Apollo Client (GraphQL通信)
